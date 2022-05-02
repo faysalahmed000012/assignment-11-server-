@@ -1,5 +1,5 @@
 const express = require("express");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const cors = require("cors");
 const port = process.env.PORT || 5000;
@@ -23,10 +23,26 @@ async function run() {
     await client.connect();
     const monitorCollection = client.db("monitor-mania").collection("monitors");
 
+    // load all inventory
     app.get("/inventories", async (req, res) => {
       const query = {};
       const cursor = monitorCollection.find(query);
       const result = await cursor.toArray();
+      res.send(result);
+    });
+    // load single inventory
+    app.get("/inventory/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const inventory = await monitorCollection.findOne(query);
+      res.send(inventory);
+    });
+
+    // add an item
+
+    app.post("/inventories", async (req, res) => {
+      const newItem = req.body;
+      const result = await monitorCollection.insertOne(newItem);
       res.send(result);
     });
   } finally {
