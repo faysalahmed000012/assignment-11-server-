@@ -45,6 +45,31 @@ async function run() {
       const result = await monitorCollection.insertOne(newItem);
       res.send(result);
     });
+
+    // delete an element
+
+    app.delete("/inventory/:id", async (req, res) => {
+      const id = req.params.body;
+      const query = { _id: ObjectId(id) };
+      const result = await monitorCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.put("/inventory/:id", async (req, res) => {
+      const id = req.params.id;
+      const newItem = req.body;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: newItem,
+      };
+      const result = await monitorCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
   } finally {
   }
 }
