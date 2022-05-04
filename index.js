@@ -1,6 +1,6 @@
 const express = require("express");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-
+const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const port = process.env.PORT || 5000;
 const app = express();
@@ -10,6 +10,22 @@ require("dotenv").config();
 
 app.use(cors());
 app.use(express.json());
+
+function verifyToken(req, res, next) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    return res.status(401).send({ message: "unauthorize access" });
+  }
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, process.env.JWT_SECRET_TOKEN, (err, decoded) => {
+    if (err) {
+      return res.status(403).send({ message: "Forbidden Access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+}
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.a2fs5.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
@@ -27,6 +43,15 @@ async function run() {
       .collection("emailMonitors");
     const chartData = client.db("monitor-mania").collection("chart");
 
+    // auth
+    app.post("/login", async (req, res) => {
+      const user = req.body;
+      const accessToken = jwt.sign(user, process.env.JWT_SECRET_TOKEN, {
+        expiresIn: "2d",
+      });
+      res.send({ accessToken });
+    });
+
     // load all inventory
     app.get("/inventories", async (req, res) => {
       const query = {};
@@ -36,13 +61,17 @@ async function run() {
     });
 
     // load inventory by email
-    app.get("/emailInventories", async (req, res) => {
+    app.get("/emailInventories", verifyToken, async (req, res) => {
+      const decodedEmail = req.decoded.email;
       const email = req.query.email;
-
-      const query = { email: email };
-      const cursor = monitorCollection2.find(query);
-      const result = await cursor.toArray();
-      res.send(result);
+      if (email === decodedEmail) {
+        const query = { email: email };
+        const cursor = monitorCollection2.find(query);
+        const result = await cursor.toArray();
+        res.send(result);
+      } else {
+        res.status(403).send({ message: "forbidden access" });
+      }
     });
     // load single inventory
     app.get("/inventory/:id", async (req, res) => {
