@@ -22,12 +22,25 @@ async function run() {
   try {
     await client.connect();
     const monitorCollection = client.db("monitor-mania").collection("monitors");
+    const monitorCollection2 = client
+      .db("monitor-mania")
+      .collection("emailMonitors");
     const chartData = client.db("monitor-mania").collection("chart");
 
     // load all inventory
     app.get("/inventories", async (req, res) => {
       const query = {};
       const cursor = monitorCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    // load inventory by email
+    app.get("/emailInventories", async (req, res) => {
+      const email = req.query.email;
+
+      const query = { email: email };
+      const cursor = monitorCollection2.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
@@ -41,9 +54,9 @@ async function run() {
 
     // add an item
 
-    app.post("/inventories", async (req, res) => {
+    app.post("/emailInventories", async (req, res) => {
       const newItem = req.body;
-      const result = await monitorCollection.insertOne(newItem);
+      const result = await monitorCollection2.insertOne(newItem);
       res.send(result);
     });
 
