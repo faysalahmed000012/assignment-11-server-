@@ -22,6 +22,7 @@ async function run() {
   try {
     await client.connect();
     const monitorCollection = client.db("monitor-mania").collection("monitors");
+    const chartData = client.db("monitor-mania").collection("chart");
 
     // load all inventory
     app.get("/inventories", async (req, res) => {
@@ -54,7 +55,7 @@ async function run() {
       const result = await monitorCollection.deleteOne(query);
       res.send(result);
     });
-
+    // updata data
     app.put("/inventory/:id", async (req, res) => {
       const id = req.params.id;
       const newItem = req.body;
@@ -68,6 +69,14 @@ async function run() {
         updateDoc,
         options
       );
+      res.send(result);
+    });
+
+    // load chart
+    app.get("/chart", async (req, res) => {
+      const query = {};
+      const cursor = chartData.find(query);
+      const result = await cursor.toArray();
       res.send(result);
     });
   } finally {
