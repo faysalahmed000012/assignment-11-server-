@@ -50,11 +50,12 @@ async function run() {
     // delete an element
 
     app.delete("/inventory/:id", async (req, res) => {
-      const id = req.params.body;
+      const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await monitorCollection.deleteOne(query);
       res.send(result);
     });
+
     // updata data
     app.put("/inventory/:id", async (req, res) => {
       const id = req.params.id;
