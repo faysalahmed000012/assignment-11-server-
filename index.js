@@ -68,6 +68,7 @@ async function run() {
         const query = { email: email };
         const cursor = monitorCollection2.find(query);
         const result = await cursor.toArray();
+        console.log(result);
         res.send(result);
       } else {
         res.status(403).send({ message: "forbidden access" });
@@ -81,6 +82,14 @@ async function run() {
       res.send(inventory);
     });
 
+    // load single inventory
+    app.get("/emailInventory/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const inventory = await monitorCollection2.findOne(query);
+      res.send(inventory);
+    });
+
     // add an item
 
     app.post("/emailInventories", async (req, res) => {
@@ -91,14 +100,23 @@ async function run() {
 
     // delete an element
 
-    app.delete("/inventory/:id", async (req, res) => {
+    app.delete("/emailInventory/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
-      const result = await monitorCollection.deleteOne(query);
+      const result = await monitorCollection2.deleteOne(query);
       res.send(result);
     });
 
-    // updata data
+    // delete user element
+
+    app.delete("/inventory/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await monitorCollection2.deleteOne(query);
+      res.send(result);
+    });
+
+    // update data
     app.put("/inventory/:id", async (req, res) => {
       const id = req.params.id;
       const newItem = req.body;
