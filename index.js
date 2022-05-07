@@ -41,6 +41,9 @@ async function run() {
     const monitorCollection2 = client
       .db("monitor-mania")
       .collection("emailMonitors");
+    const usersItemCollection = client
+      .db("monitor-mania")
+      .collection("usersItem");
     const chartData = client.db("monitor-mania").collection("chart");
 
     // auth
@@ -61,12 +64,12 @@ async function run() {
     });
 
     // load inventory by email
-    app.get("/inventoriess", verifyToken, async (req, res) => {
+    app.get("/usersItem", verifyToken, async (req, res) => {
       const decodedEmail = req.decoded.email;
       const email = req.query.email;
       if (email === decodedEmail) {
         const query = { email: email };
-        const cursor = monitorCollection2.find(query);
+        const cursor = usersItemCollection.find(query);
         const result = await cursor.toArray();
         res.send(result);
       } else {
@@ -83,10 +86,19 @@ async function run() {
 
     // add an item
 
-    app.post("/inventories", async (req, res) => {
+    app.post("/usersItem", async (req, res) => {
       const newItem = req.body;
-      const result = await monitorCollection2.insertOne(newItem);
+      const result = await usersItemCollection.insertOne(newItem);
       res.send(result);
+    });
+
+    // load single user added item
+
+    app.post("/usersItem", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const inventory = await usersItemCollection.findOne(query);
+      res.send(inventory);
     });
 
     // delete user element
