@@ -37,7 +37,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     await client.connect();
-    const monitorCollection = client.db("monitor-mania").collection("monitors");
+
     const monitorCollection2 = client
       .db("monitor-mania")
       .collection("emailMonitors");
@@ -55,20 +55,19 @@ async function run() {
     // load all inventory
     app.get("/inventories", async (req, res) => {
       const query = {};
-      const cursor = monitorCollection.find(query);
+      const cursor = monitorCollection2.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
 
     // load inventory by email
-    app.get("/emailInventories", verifyToken, async (req, res) => {
+    app.get("/inventoriess", verifyToken, async (req, res) => {
       const decodedEmail = req.decoded.email;
       const email = req.query.email;
       if (email === decodedEmail) {
         const query = { email: email };
         const cursor = monitorCollection2.find(query);
         const result = await cursor.toArray();
-        console.log(result);
         res.send(result);
       } else {
         res.status(403).send({ message: "forbidden access" });
@@ -78,32 +77,15 @@ async function run() {
     app.get("/inventory/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
-      const inventory = await monitorCollection.findOne(query);
-      res.send(inventory);
-    });
-
-    // load single inventory
-    app.get("/emailInventory/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: ObjectId(id) };
       const inventory = await monitorCollection2.findOne(query);
       res.send(inventory);
     });
 
     // add an item
 
-    app.post("/emailInventories", async (req, res) => {
+    app.post("/inventories", async (req, res) => {
       const newItem = req.body;
       const result = await monitorCollection2.insertOne(newItem);
-      res.send(result);
-    });
-
-    // delete an element
-
-    app.delete("/emailInventory/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: ObjectId(id) };
-      const result = await monitorCollection2.deleteOne(query);
       res.send(result);
     });
 
@@ -125,7 +107,7 @@ async function run() {
       const updateDoc = {
         $set: newItem,
       };
-      const result = await monitorCollection.updateOne(
+      const result = await monitorCollection2.updateOne(
         filter,
         updateDoc,
         options
