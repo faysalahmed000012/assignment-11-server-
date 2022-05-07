@@ -121,7 +121,7 @@ async function run() {
 
     // delete user added item
 
-    app.delete("//usersItem/:id", async (req, res) => {
+    app.delete("/usersItem/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await usersItemCollection.deleteOne(query);
