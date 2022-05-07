@@ -84,6 +84,15 @@ async function run() {
       res.send(inventory);
     });
 
+    // load single user added item
+
+    app.get("/usersItem/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const inventory = await usersItemCollection.findOne(query);
+      res.send(inventory);
+    });
+
     // add an item
 
     app.post("/usersItem", async (req, res) => {
@@ -101,12 +110,21 @@ async function run() {
       res.send(inventory);
     });
 
-    // delete user element
+    // delete item
 
     app.delete("/inventory/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await monitorCollection2.deleteOne(query);
+      res.send(result);
+    });
+
+    // delete user added item
+
+    app.delete("//usersItem/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await usersItemCollection.deleteOne(query);
       res.send(result);
     });
 
